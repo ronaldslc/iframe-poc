@@ -9,7 +9,7 @@ export default {
 				<title>Iframe Example</title>
 			</head>
 			<body>
-				<iframe src="https://iframe.gr8.engineer" width="100%" height="100%"></iframe>
+				<iframe src="https://iframe.gr8.lol" width="100%" height="100%"></iframe>
 			</body>
 			</html>
 		`;

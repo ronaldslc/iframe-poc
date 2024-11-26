@@ -16,6 +16,8 @@ export default {
         const cookies = request.headers.get('cookie');
 		const referer = request.headers.get('Referer');
         const requiredCookie = 'resource=allowed';
+		const url = new URL(request.url);
+        const reset = url.searchParams.get('reset');
 
 		let response: Response;
 
@@ -24,25 +26,36 @@ export default {
                 headers: { 'Content-Type': 'text/html' },
             });
         } else {
-			if (referer) {
-				// return 403
-				response = new Response('Forbidden', {
-					status: 403,
-					headers: {
-						'Content-Type': 'text/plain',
-					},
-				});
-			} else {
-				response = new Response('Setting cookie and redirecting...', {
-					headers: {
-						'Set-Cookie': 'resource=allowed; Path=/; HttpOnly',
-						'Content-Type': 'text/plain',
-						'Location': 'https://wrapper.gr8.engineer',
-					},
-					status: 302,
-				});
-			}
+			// return 403
+			response = new Response('Forbidden', {
+				status: 403,
+				headers: {
+					'Content-Type': 'text/plain',
+				},
+			});
         }
+
+		if (reset) {
+			response = new Response('Setting cookie and redirecting...', {
+				headers: {
+					'Set-Cookie': 'resource=allowed; Path=/; HttpOnly; Secure; SameSite=None',
+					'Content-Type': 'text/plain',
+					'Location': 'https://wrapper.gr8.engineer',
+				},
+				status: 302,
+			});
+		}
+
+		// Add CORS headers if the request is from wrapper.gr8.engineer
+		if (referer === 'https://wrapper.gr8.engineer') {
+			response.headers.set('Access-Control-Allow-Origin', referer);
+			response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+			response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+		}
+
+		// Allow embedding in an iframe from wrapper.gr8.engineer
+		response.headers.set('X-Frame-Options', 'ALLOW-FROM https://wrapper.gr8.engineer');
+		response.headers.set('Content-Security-Policy', "frame-ancestors 'self' https://wrapper.gr8.engineer");
 
 		return response;
     },
